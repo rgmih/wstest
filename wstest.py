@@ -6,6 +6,8 @@ Created on May 6, 2011
 
 import urllib2
 import libxml2
+import jsonpath
+import json
 
 class Request():
     def __init__(self,text):
@@ -15,38 +17,55 @@ class Request():
     def text(self):
         return self.__text
 
+def evaluate_xpath(text,path,nsmapping):
+    doc = libxml2.parseDoc(text)
+    xp = doc.xpathNewContext()
+    try:
+        for (prefix,ns) in nsmapping.iteritems():
+            xp.xpathRegisterNs(prefix,ns)
+        nodes = xp.xpathEval(path)
+        if len(nodes) == 0:
+            root = doc.getRootElement()
+            if root.name == 'Envelope' and \
+                    root.ns().content == 'http://www.w3.org/2003/05/soap-envelope':
+                # try starting from /envelope/body
+                xp.xpathRegisterNs('soap12','http://www.w3.org/2003/05/soap-envelope')
+                nodes = xp.xpathEval('/soap12:Envelope/soap12:Body')
+                if len(nodes) > 0:
+                    xp.setContextNode(nodes[0])
+                    nodes = xp.xpathEval(path[1:]) # make path relative
+        if len(nodes) == 0:
+            return None
+        elif len(nodes) == 1:
+            return nodes[0].content
+        else:
+            return None # TODO
+    finally:
+        xp.xpathFreeContext()
+        doc.freeDoc()
+
+def evaluate_jsonpath(text,path):
+    object = json.loads(text)
+    if path.startswith('/'):
+        path = path[1:]
+    path = path.replace('/',';')
+    return jsonpath.jsonpath(object,path,'VALUE')
+
 class Response():
     def __init__(self,wst,text):
         self.__wst  = wst
         self.__text = text
         
     def at(self,path,nsmapping={}):
-        full_nsmapping = dict(self.__wst.nsmapping, **nsmapping)
-        doc = libxml2.parseDoc(self.__text)
-        xp = doc.xpathNewContext()
-        try:
-            for (prefix,ns) in full_nsmapping.iteritems():
-                xp.xpathRegisterNs(prefix,ns)
-            nodes = xp.xpathEval(path)
-            if len(nodes) == 0:
-                root = doc.getRootElement()
-                if root.name == 'Envelope' and \
-                        root.ns().content == 'http://www.w3.org/2003/05/soap-envelope':
-                    # try starting from /envelope/body
-                    xp.xpathRegisterNs('soap12','http://www.w3.org/2003/05/soap-envelope')
-                    nodes = xp.xpathEval('/soap12:Envelope/soap12:Body')
-                    if len(nodes) > 0:
-                        xp.setContextNode(nodes[0])
-                        nodes = xp.xpathEval(path[1:]) # make path relative
-            if len(nodes) == 0:
-                return None
-            elif len(nodes) == 1:
-                return nodes[0].content
+        if self.__text.strip().startswith('<'): # XML
+            full_nsmapping = dict(self.__wst.nsmapping, **nsmapping)
+            return evaluate_xpath(self.__text, path, full_nsmapping)
+        else:
+            result = evaluate_jsonpath(self.__text,path)
+            if result and len(result) == 1:
+                return result[0]
             else:
-                return None # TODO
-        finally:
-            xp.xpathFreeContext()
-            doc.freeDoc()
+                return False
             
     def text(self):
         return self.__text
