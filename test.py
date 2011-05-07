@@ -1,13 +1,15 @@
 '''
 Created on May 7, 2011
 
-@author: gleb
+@author: gleb.rybakov
 '''
 from wstest import WSTest
 
 if __name__ == '__main__':
     wst = WSTest()
-    # response = wst.on("http://google.com/").get();
+    wst.nsmapping['soap'] = 'http://www.w3.org/2003/05/soap-envelope'
+    wst.nsmapping['wsa']  = 'http://www.w3.org/2005/08/addressing'
+
     response = wst.on(
         "http://localhost:6500/onvif/device/",
         headers = {'Content-Type':'application/soap+xml'}
@@ -16,4 +18,5 @@ if __name__ == '__main__':
             consumer = 'http://localhost:8080/server/services/NotificationConsumer/'
         )
     )
-    print response.text()
+    # print response.text()
+    print response.at('/soap:Envelope/soap:Header/wsa:Action1')
