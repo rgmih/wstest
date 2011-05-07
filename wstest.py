@@ -19,18 +19,35 @@ class Response():
     def __init__(self,wst,text):
         self.__wst  = wst
         self.__text = text
+        
     def at(self,path,nsmapping={}):
+        full_nsmapping = dict(self.__wst.nsmapping, **nsmapping)
         doc = libxml2.parseDoc(self.__text)
         xp = doc.xpathNewContext()
-        for (prefix,ns) in dict(self.__wst.nsmapping, **nsmapping).iteritems():
-            xp.xpathRegisterNs(prefix,ns)
-        a = xp.xpathEval(path)
-        if len(a) == 0:
-            return None
-        elif len(a) == 1:
-            return a[0].content
-        else:
-            return a
+        try:
+            for (prefix,ns) in full_nsmapping.iteritems():
+                xp.xpathRegisterNs(prefix,ns)
+            nodes = xp.xpathEval(path)
+            if len(nodes) == 0:
+                root = doc.getRootElement()
+                if root.name == 'Envelope' and \
+                        root.ns().content == 'http://www.w3.org/2003/05/soap-envelope':
+                    # try starting from /envelope/body
+                    xp.xpathRegisterNs('soap12','http://www.w3.org/2003/05/soap-envelope')
+                    nodes = xp.xpathEval('/soap12:Envelope/soap12:Body')
+                    if len(nodes) > 0:
+                        xp.setContextNode(nodes[0])
+                        nodes = xp.xpathEval(path[1:]) # make path relative
+            if len(nodes) == 0:
+                return None
+            elif len(nodes) == 1:
+                return nodes[0].content
+            else:
+                return None # TODO
+        finally:
+            xp.xpathFreeContext()
+            doc.freeDoc()
+            
     def text(self):
         return self.__text
 
