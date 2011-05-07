@@ -1,16 +1,18 @@
 '''
 Created on May 6, 2011
 
-@author: gleb
+@author: gleb.rybakov
 '''
 
 import urllib2
 
 class Request():
+    def __init__(self,text):
+        self.__text = text
     def using(self,**kwargs):
-        return self
+        return Request(self.__text.format(**kwargs))
     def text(self):
-        return 'abc'
+        return self.__text
 
 class Response():
     def __init__(self,text):
@@ -24,9 +26,10 @@ class HTTPResponse(Response):
     def __init__(self,url):
         self.url = url
         Response.__init__(self, url.read())
+        self.url.close()
     
     def header(self,name):
-        return self.url.getheader(name)
+        return self.url.info().getheader(name)
 
 class HTTPEndpoint():
     def __init__(self,url,**kwargs):
@@ -52,5 +55,6 @@ class WSTest():
         # different protocol bindings may be added
         return HTTPEndpoint(uri,**kwargs)
     
-    def request(self,path):
-        return Request()
+    def file(self,path):
+        f = open(path)
+        return Request(f.read())

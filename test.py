@@ -9,10 +9,10 @@ if __name__ == '__main__':
     wst = WSTest()
     # response = wst.on("http://google.com/").get();
     response = wst.on(
-        "http://localhost:6500/event/NotificationProducer/",
+        "http://localhost:6500/onvif/device/",
         headers = {'Content-Type':'application/soap+xml'}
     ).post(
-        wst.request('1.soap').using(
+        wst.file('1.soap').using(
             consumer = 'http://localhost:8080/server/services/NotificationConsumer/'
         )
     )
