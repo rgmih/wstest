@@ -24,6 +24,8 @@ def evaluate_xpath(text,path,nsmapping):
         for (prefix,ns) in nsmapping.iteritems():
             xp.xpathRegisterNs(prefix,ns)
         nodes = xp.xpathEval(path)
+        print path
+        print len(nodes)
         if len(nodes) == 0:
             root = doc.getRootElement()
             if root.name == 'Envelope' and \

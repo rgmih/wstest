@@ -23,3 +23,9 @@ def test_soap():
     assert response.at('/soap:Envelope/soap:Body/d:GetDeviceInformationResponse/d:Manufacturer',{
         'd':'http://www.onvif.org/ver10/device/wsdl'
     }) == 'ITRIUM-SPb'
+    
+def test_xml():
+    wst = WSTest()
+
+    response = wst.on('http://api.geonames.org/cities?north=44.1&south=-9.9&east=-22.4&west=55.2&username=demo').get()
+    assert response.at('/geonames/geoname[1]/name') == 'Mexico City'
