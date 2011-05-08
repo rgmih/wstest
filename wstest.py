@@ -6,8 +6,8 @@ Created on May 6, 2011
 
 import urllib2
 import libxml2
-import jsonpath
 import json
+import hutools
 
 class Request():
     def __init__(self,text):
@@ -46,13 +46,6 @@ def evaluate_xpath(text,path,nsmapping):
         xp.xpathFreeContext()
         doc.freeDoc()
 
-def evaluate_jsonpath(text,path):
-    object = json.loads(text)
-    if path.startswith('/'):
-        path = path[1:]
-    path = path.replace('/',';')
-    return jsonpath.jsonpath(object,path,'VALUE')
-
 class Response():
     def __init__(self,wst,text):
         self.__wst  = wst
@@ -63,11 +56,14 @@ class Response():
             full_nsmapping = dict(self.__wst.nsmapping, **nsmapping)
             return evaluate_xpath(self.__text, path, full_nsmapping)
         else:
-            result = evaluate_jsonpath(self.__text,path)
-            if result and len(result) == 1:
-                return result[0]
-            else:
-                return False
+            object = json.loads(self.__text)
+            serializedElementTree = hutools.dict2et(object)
+            serialized = ""
+            # removing root tag and adding xml header
+            for child in serializedElementTree:
+                serialized = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>%s' % hutools.ET.tostring(child, 'utf-8')
+                break
+            return evaluate_xpath(serialized, path, nsmapping)
             
     def text(self):
         return self.__text

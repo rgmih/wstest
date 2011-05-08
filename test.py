@@ -8,7 +8,7 @@ from wstest import WSTest
 def test_json():
     wst = WSTest()
     response = wst.on('http://api.geonames.org/citiesJSON?north=44.1&south=-9.9&east=-22.4&west=55.2&lang=de&username=demo').get()
-    assert response.at('/geonames[0]/name') == 'Mexico City'
+    assert response.at('/geonames[1]/name') == 'Mexico City'
     
 def test_soap():
     wst = WSTest()
