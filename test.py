@@ -3,8 +3,8 @@ Created on May 7, 2011
 
 @author: gleb.rybakov
 '''
-from wstest import WSTest, Request
-import jaas
+from wstest.core import WSTest, Request
+from wstest import jaas
 
 def test_json():
     wst = WSTest()
