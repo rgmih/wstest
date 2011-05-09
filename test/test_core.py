@@ -3,11 +3,18 @@ import os
 
 def test_soap():
     wst = WSTest()
+    wst.nsmapping = {
+        'soap': 'http://www.w3.org/2003/05/soap-envelope'                 
+    }
     
     response = wst.on(
         'http://www.w3schools.com/webservices/tempconvert.asmx',
         headers = {'Content-Type':'application/soap+xml'}
     ).post(wst.file('{0}/test_core.soap12'.format(os.path.dirname(__file__))))
+    
+    assert response.at('/soap:Envelope/soap:Body/tmp:CelsiusToFahrenheitResponse/tmp:CelsiusToFahrenheitResult',{
+        'tmp': 'http://tempuri.org/'
+    }) == '-4.9'
     
     assert response.at('/tmp:CelsiusToFahrenheitResponse/tmp:CelsiusToFahrenheitResult',{
         'tmp': 'http://tempuri.org/'
