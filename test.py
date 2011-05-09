@@ -3,7 +3,8 @@ Created on May 7, 2011
 
 @author: gleb.rybakov
 '''
-from wstest import WSTest
+from wstest import WSTest, Request
+import jaas
 
 def test_json():
     wst = WSTest()
@@ -29,3 +30,12 @@ def test_xml():
 
     response = wst.on('http://api.geonames.org/cities?north=44.1&south=-9.9&east=-22.4&west=55.2&username=demo').get()
     assert response.at('/geonames/geoname[1]/name') == 'Mexico City'
+    
+def test_jaas():
+    jsessionid = jaas.do_login('http://217.119.18.83:8081/server/', 'root', 'root')
+    
+    wst = WSTest()
+    wst.on(
+        "http://217.119.18.83:8081/server/dispatcher/session/",
+        headers = {'Cookie': 'JSESSIONID={0}'.format(jsessionid)}
+    ).post(Request(''))

@@ -86,7 +86,8 @@ class HTTPEndpoint():
         pass
     def post(self,request,header={},param=[]):
         opener = urllib2.build_opener(urllib2.HTTPHandler)
-        http_request = urllib2.Request(self.url,data=request.text(),headers=self.headers)
+        #print self.headers
+        http_request = urllib2.Request(self.url,request.text(),self.headers)
         url = opener.open(http_request)
         return HTTPResponse(self.__wst,url)
     
