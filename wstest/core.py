@@ -6,8 +6,7 @@ Created on May 6, 2011
 
 import urllib2
 import libxml2
-import json
-import hutools
+import json2xml
 
 class Request():
     def __init__(self,text):
@@ -55,15 +54,9 @@ class Response():
         if self.__text.strip().startswith('<'): # XML
             full_nsmapping = dict(self.__wst.nsmapping, **nsmapping)
             return evaluate_xpath(self.__text, path, full_nsmapping)
-        else:
-            object = json.loads(self.__text)
-            serializedElementTree = hutools.dict2et(object)
-            serialized = ""
-            # removing root tag and adding xml header
-            for child in serializedElementTree:
-                serialized = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>%s' % hutools.ET.tostring(child, 'utf-8')
-                break
-            return evaluate_xpath(serialized, path, nsmapping)
+        else: # JSON
+            xml = json2xml.to_xml(self.__text)
+            return evaluate_xpath(xml, '/json/' + path, nsmapping)
             
     def text(self):
         return self.__text
