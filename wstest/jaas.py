@@ -1,10 +1,16 @@
+"""This module provides Java Authentication and Authorization
+Service (JAAS) related utility functions.
+"""
+
 import urllib2
 import urllib
 import re
 
-def do_login(url,username,password):
-        
+def do_login(url, username, password):
+    """Performs login to URL protected with JAAS"""
+    
     def parse_jsessionid(response):
+        """Parses cookie string and returns JAAS session identifier."""
         cookie = response.info().getheader('Set-Cookie')
         return re.match(r'JSESSIONID=(\w*)', cookie).group(1)
     
