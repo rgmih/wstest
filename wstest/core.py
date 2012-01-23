@@ -16,6 +16,22 @@ class Request():
     def text(self):
         return self.__text
 
+class DynamicObject:
+    pass
+
+def xml_to_object(node):
+    
+    result = DynamicObject()
+    count = 0
+    for child in node.children:
+        if child.type == "element":
+            setattr(result, child.name, xml_to_object(child))
+            count += 1
+    if count == 0:
+        return child.content
+    else:
+        return result
+
 def evaluate_xpath(text, path, nsmapping):
     doc = libxml2.parseDoc(text)
     xpc = doc.xpathNewContext()
@@ -38,9 +54,12 @@ def evaluate_xpath(text, path, nsmapping):
         if len(nodes) == 0:
             return None
         elif len(nodes) == 1:
-            return nodes[0].content
+            return xml_to_object(nodes[0])
         else:
-            return None # TODO
+            result = []
+            for node in nodes:
+                result.append(xml_to_object(node))
+            return result
     finally:
         xpc.xpathFreeContext()
         doc.freeDoc()
