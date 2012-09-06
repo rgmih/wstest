@@ -9,5 +9,5 @@ setup(
     url='https://github.com/rgmih/wstest',
     license='LICENSE',
     description='Compact web-service unit testing framework',
-    long_description=open('README').read(),
+    long_description=open('README.md').read(),
 )
