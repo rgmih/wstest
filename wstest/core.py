@@ -39,8 +39,8 @@ def evaluate_xpath(text, path, nsmapping):
         for (prefix, namespace) in nsmapping.iteritems():
             xpc.xpathRegisterNs(prefix, namespace)
         nodes = xpc.xpathEval(path)
-        print path
-        print len(nodes)
+        print(path)
+        print(len(nodes))
         if len(nodes) == 0:
             root = doc.getRootElement()
             if root.name == 'Envelope' and \
